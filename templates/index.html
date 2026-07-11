@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Visualizer</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .container { max-width: 600px; margin: auto; }
+        textarea { width: 100%; height: 100px; padding: 10px; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        #canvas-area { border: 2px solid #333; margin-top: 20px; background: white; width: 100%; height: 400px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Physics Problem Visualizer</h1>
+        <textarea id="physicsInput" placeholder="E.g., A 10kg block on a 30 degree incline..."></textarea>
+        <button onclick="sendToAI()">Visualize</button>
+
+        <canvas id="canvas-area"></canvas>
+    </div>
+
+    <script>
+        async function sendToAI() {
+            const input = document.getElementById('physicsInput').value;
+            
+            // This sends the text to your Python backend (/api/analyze)
+            const res = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({numerical: input})
+            });
+            
+            const data = await res.json();
+            console.log("AI Response:", data);
+            
+            alert("Check the browser console (F12) to see the JSON data from the AI!");
+            // Later: You will add code here to draw the diagram based on the JSON 'data'
+        }
+    </script>
+</body>
+</html>
