@@ -2,41 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physics Visualizer</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
-        .container { max-width: 600px; margin: auto; }
-        textarea { width: 100%; height: 100px; padding: 10px; margin-bottom: 10px; }
-        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
-        #canvas-area { border: 2px solid #333; margin-top: 20px; background: white; width: 100%; height: 400px; }
+        :root { --bg: #f4f4f9; --text: #333; --card: #fff; }
+        .dark-mode { --bg: #1a1a1a; --text: #f4f4f9; --card: #2d2d2d; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; transition: 0.3s; padding: 20px; }
+        
+        #welcome-screen, #main-app { display: none; text-align: center; }
+        #welcome-screen.active, #main-app.active { display: block; }
+        
+        canvas { background: var(--card); border: 2px solid var(--text); margin-top: 20px; }
+        textarea { width: 80%; height: 100px; margin: 10px 0; }
+        button { padding: 10px 20px; cursor: pointer; }
+        .theme-toggle { position: absolute; top: 20px; right: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Physics Problem Visualizer</h1>
-        <textarea id="physicsInput" placeholder="E.g., A 10kg block on a 30 degree incline..."></textarea>
-        <button onclick="sendToAI()">Visualize</button>
 
-        <canvas id="canvas-area"></canvas>
+    <button class="theme-toggle" onclick="toggleTheme()">Switch Theme</button>
+
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="active">
+        <h1>Welcome to Physics Visualizer!</h1>
+        <p>Made by <a href="https://www.instagram.com/mo1nsterrr/" target="_blank">Rana Ibrahim</a></p>
+        <input type="text" id="userName" placeholder="Enter your name">
+        <button onclick="startApp()">Continue</button>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app">
+        <h1>Physics Problem Visualizer</h1>
+        <h3 id="userDisplay"></h3>
+        <textarea id="physicsInput" placeholder="E.g., A 10kg block on a 30 degree incline..."></textarea><br>
+        <button onclick="visualize()">Visualize</button>
+        <canvas id="canvas-area" width="600" height="400"></canvas>
+        <p>Made by <a href="https://www.instagram.com/mo1nsterrr/" target="_blank">Rana Ibrahim</a></p>
     </div>
 
     <script>
-        async function sendToAI() {
+        function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+        
+        function startApp() {
+            const name = document.getElementById('userName').value;
+            if(!name) return alert("Please enter a name!");
+            document.getElementById('userDisplay').innerText = "Welcome, " + name;
+            document.getElementById('welcome-screen').classList.remove('active');
+            document.getElementById('main-app').classList.add('active');
+        }
+
+        async function visualize() {
             const input = document.getElementById('physicsInput').value;
-            
-            // This sends the text to your Python backend (/api/analyze)
             const res = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({numerical: input})
             });
-            
             const data = await res.json();
-            console.log("AI Response:", data);
-            
-            alert("Check the browser console (F12) to see the JSON data from the AI!");
-            // Later: You will add code here to draw the diagram based on the JSON 'data'
+            draw(data);
+        }
+
+        function draw(data) {
+            const ctx = document.getElementById('canvas-area').getContext('2d');
+            ctx.clearRect(0, 0, 600, 400);
+            ctx.fillStyle = 'red';
+            ctx.fillRect(100, 250, 50, 50); // Simplified for now
+            alert("Data received: " + JSON.stringify(data));
         }
     </script>
 </body>
