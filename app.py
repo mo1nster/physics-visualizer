@@ -16,33 +16,33 @@ def analyze():
     api_key = os.getenv("MESH_API_KEY")
     
     if not api_key:
-        return jsonify({"error": "API Key missing"}), 500
-
-    # The "Training" Prompt
-    system_prompt = (
-        "Extract physics data from the text. Return ONLY a valid JSON object. "
-        "Keys: 'kg' (float), 'angle' (float), 'friction' (float). "
-        "Example: {'kg': 15.0, 'angle': 35.0, 'friction': 0.15}"
-    )
+        return jsonify({"error": "Missing MESH_API_KEY"}), 500
 
     try:
-        # Replace with your actual AI API URL (e.g., OpenAI/Anthropic/etc)
-        # This is an example structure
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}"},
-            json={
-                "model": "gpt-4o",
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_input}
-                ]
-            }
-        )
-        
-        result_text = response.json()['choices'][0]['message']['content']
-        # Clean up in case the AI adds markdown backticks
-        clean_json = result_text.replace('```json', '').replace('```', '').strip()
+        # Mesh API configuration
+        url = "https://api.meshapi.ai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "ai21/jamba-1-5-large-v1",
+            "messages": [
+                {"role": "system", "content": "Extract physics data. Output ONLY JSON: {'kg': float, 'angle': float, 'friction': float}"},
+                {"role": "user", "content": user_input}
+            ]
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+        response_data = response.json()
+
+        # Handle potential API errors
+        if 'choices' not in response_data:
+            return jsonify({"error": f"API Error: {json.dumps(response_data)}"}), 500
+            
+        content = response_data['choices'][0]['message']['content']
+        # Clean markdown if present
+        clean_json = content.replace('```json', '').replace('```', '').strip()
         return jsonify(json.loads(clean_json))
 
     except Exception as e:
